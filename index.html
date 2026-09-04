@@ -50,27 +50,93 @@
   </ul>
 
   <h4>Kodexempel: Firebase and Firestore</h4>
-<img src="Screenshot 2026-06-18 at 17.15.00.png"
-     alt="Firebase Authentication"
-     width="800">
 
+<h4>Kodexempel från mitt eget arbete</h4>
 
 <p>
-Kod som jag implementerade för autentisering i CozyFocus.
-Den hanterar registrering, inloggning med e-post/lösenord,
-Google-inloggning samt utloggning genom Firebase Authentication.
+Nedan visas konkreta exempel på kod som jag själv utvecklade inom CozyFocus-projektet.
+Jag ansvarade bland annat för autentisering med Firebase Authentication och
+persistens av användarspecifik data med Cloud Firestore.
 </p>
+
+<h5>Firebase Authentication</h5>
+
+<pre><code>
+export function registerUser(email, password) {
+  return createUserWithEmailAndPassword(auth, email, password);
+}
+
+export function loginUser(email, password) {
+  return signInWithEmailAndPassword(auth, email, password);
+}
+
+export function loginWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  return signInWithPopup(auth, provider);
+}
+
+export function logoutUser() {
+  return signOut(auth);
+}
+</code></pre>
+
+<p>
+Jag implementerade dessa funktioner för att hantera registrering,
+inloggning med e-post och lösenord, Google-inloggning samt utloggning.
+Funktionerna använder Firebase Authentication och utgör en del av mitt
+eget bidrag till projektet.
+</p>
+
+<h5>Cloud Firestore – persistens</h5>
+
+<pre><code>
+const USER_COLLECTION = "users";
+
+export function saveUserData(userId, data) {
+  if (!userId) {
+    return Promise.resolve();
+  }
+
+  const userRef = doc(db, USER_COLLECTION, userId);
+  return setDoc(userRef, data, { merge: true });
+}
+
+export function loadUserData(userId) {
+  if (!userId) {
+    return Promise.resolve(null);
+  }
+
+  const userRef = doc(db, USER_COLLECTION, userId);
+
+  return getDoc(userRef).then(function (snapshot) {
+    if (!snapshot.exists()) {
+      return null;
+    }
+
+    return snapshot.data();
+  });
+}
+</code></pre>
+
+<p>
+Jag implementerade persistenslagret för att spara och läsa
+användarspecifik data i Firestore. Funktionen <code>saveUserData</code>
+sparar data i den inloggade användarens dokument, medan
+<code>loadUserData</code> hämtar tidigare sparad data när användaren
+återvänder till applikationen.
+</p>
+
+<p>
+Skärmdumparna nedan visar samma kod i projektets utvecklingsmiljö.
+</p>
+
+<img src="Screenshot 2026-06-18 at 17.15.00.png"
+     alt="Firebase Authentication-kod i CozyFocus"
+     width="800">
 
 <img src="Screenshot 2026-06-18 at 17.12.36.png"
-     alt="Firestore Persistence Layer"
+     alt="Firestore persistence-kod i CozyFocus"
      width="800">
-
-<p>
-Kod som jag implementerade för att koppla applikationsmodellen till Firestore.
-Funktionerna ansvarar för att spara och läsa användarspecifik data så att varje
-användare får sina egna uppgifter, studieplaner och inställningar.
-</p>
-</div>
 
 
   <div class="card">
