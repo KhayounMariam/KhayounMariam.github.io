@@ -139,39 +139,136 @@ Skärmdumparna nedan visar samma kod i projektets utvecklingsmiljö.
      width="800">
 
 
-  <div class="card">
-  <h3>Projekt 2: THS Business – Webbplattform (pågående)</h3>
+  
+   <div class="card">
+  <h3>Projekt 2: FollowTheArrow (grupprojekt i P4)</h3>
+
   <p>
-    Jag är med och utvecklar en webbplats för THS Business (en del av studentföreningen THS).
-    Målet är att göra det enkelt för PR- och Event-teamet att publicera nya event och produkter som företag kan köpa,
-    samt att låta företag publicera jobbannonser som studenter kan söka direkt via sidan.
+    FollowTheArrow är en webbaserad applikation där användaren kan upptäcka
+    destinationer och följa genererade rutter. Projektet utvecklades i grupp.
   </p>
 
-  <p><b>Min roll i projektet:</b></p>
-  <ul>
-    <li>Bidrar löpande med utveckling av frontend (HTML, JavaScript, TypeScript)</li>
-    <li>Bygger och förbättrar UI-komponenter och sidlayout (”dekorativt”/presentation)</li>
-    <li>Implementerar kopplingen mot Contentful så att innehåll kan uppdateras av teamen utan att gå via utvecklarna</li>
-  </ul>
+  <p><b>Mitt bidrag i projektet:</b></p>
+  <p>
+    Jag arbetade med flera delar av applikationens funktionalitet, bland annat
+    autentiseringsflödet, skyddade sidor samt lagring av användarspecifik
+    rutthistorik. Kodexemplen nedan visar funktionalitet som jag implementerade
+    eller vidareutvecklade i projektet.
+  </p>
 
   <p><b>Tekniker:</b></p>
   <ul>
-    <li>HTML, JavaScript, TypeScript</li>
-    <li>Contentful (headless CMS) som backend för innehåll</li>
-    <li>Teamarbete med regelbundna möten och gemensam planering</li>
+    <li>React och TypeScript</li>
+    <li>Firebase Authentication</li>
+    <li>Cloud Firestore</li>
+    <li>React Router</li>
   </ul>
 
-  <p><b>Vad jag lär mig:</b></p>
-  <ul>
-    <li>Att utveckla en produkt i team med kontinuerliga leveranser</li>
-    <li>Att bygga användarvänligt innehållsflöde via headless CMS (Contentful)</li>
-    <li>Att strukturera frontend-kod för en växande webbapplikation</li>
-  </ul>
+  <h4>Kodexempel 1: Autentisering och skyddade routes</h4>
+
+  <pre><code>
+const ProtectedRoute = ({ user, children }) =&gt; {
+  if (!user) {
+    return &lt;Navigate to="/" replace /&gt;;
+  }
+  return children;
+};
+
+useEffect(() =&gt; {
+  const unsubscribe = observeAuthState((currentUser) =&gt; {
+    setUser(currentUser);
+    setAuthLoading(false);
+  });
+
+  return () =&gt; unsubscribe();
+}, []);
+
+const handleLogin = async (e: React.FormEvent) =&gt; {
+  e.preventDefault();
+
+  try {
+    await login(email, password);
+    navigate("/home");
+  } catch (error: any) {
+    console.error("Login failed:", error);
+    alert(error.message || "Login failed");
+  }
+};
+
+const handleRegister = async () =&gt; {
+  try {
+    await register(email, password);
+    navigate("/home");
+  } catch (error: any) {
+    console.error("Register failed:", error);
+    alert(error.message || "Register failed");
+  }
+};
+  </code></pre>
 
   <p>
-    🔒 Projektet ligger i organisationens repo och källkoden är inte publik. 
-    Status: pågående.
+    I detta arbete kopplade jag inloggnings- och registreringsflödet till
+    autentiseringstjänsten och arbetade med hantering av användarens
+    autentiseringsstatus. Jag arbetade även med skyddade routes, så att sidor
+    som kräver inloggning inte kan nås av en användare som inte är autentiserad.
   </p>
+
+  <h4>Kodexempel 2: Användarspecifik rutthistorik</h4>
+
+  <pre><code>
+export async function saveRouteHistory(route) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("No logged-in user");
+
+  const historyRef = collection(
+    db,
+    "users",
+    user.uid,
+    "routeHistory"
+  );
+
+  await addDoc(historyRef, {
+    routeHash: route.routeHash,
+    distance: route.distance,
+    createdAt: serverTimestamp()
+  });
+}
+
+export async function getRouteHistory() {
+  const user = auth.currentUser;
+  if (!user) throw new Error("No logged-in user");
+
+  const historyRef = collection(
+    db,
+    "users",
+    user.uid,
+    "routeHistory"
+  );
+
+  const snapshot = await getDocs(historyRef);
+
+  return snapshot.docs.map((doc) =&gt; ({
+    id: doc.id,
+    ...doc.data()
+  }));
+}
+  </code></pre>
+
+  <p>
+    Jag implementerade funktionalitet för att spara och läsa användarens
+    rutthistorik i Cloud Firestore. Rutterna lagras under den inloggade
+    användarens unika ID tillsammans med bland annat ruttens hash, distans
+    och tidpunkt. På så sätt kopplas varje användares rutthistorik till rätt konto.
+  </p>
+
+  <p><b>Vad jag lärde mig:</b></p>
+  <ul>
+    <li>Hantera autentisering och användartillstånd i en React-applikation</li>
+    <li>Skydda routes beroende på om användaren är inloggad</li>
+    <li>Lagra användarspecifik data i Firestore</li>
+    <li>Arbeta vidare i en gemensam kodbas tillsammans med andra utvecklare</li>
+  </ul>
+</div>
 </div>
 
 
